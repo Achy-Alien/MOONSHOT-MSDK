@@ -2,6 +2,8 @@
 using System.Runtime.InteropServices;
 using SimpleJSON;
 using UnityEngine;
+using System.Collections;
+using WinDataProcess;
 
 namespace Merge
 {
@@ -77,6 +79,9 @@ namespace Merge
 			[DllImport("libMergeVROSX")] private static extern int mergeVRExit();
 //			[DllImport("libMergeVROSX")] private static extern BundleIdentifierData mergeGetBundleIdentifer();
 			[DllImport("libMergeVROSX")] private static extern void mergeVRSetMaxControllerCount(int count);
+		#elif (UNITY_EDITOR_WIN)
+		[DllImport("BLE.dll",CallingConvention = CallingConvention.StdCall)] static extern int GetDeviceState();
+		[DllImport("BLE.dll",CallingConvention = CallingConvention.StdCall)] static extern int GetStructData(IntPtr PData,uint iSize);
 		#endif
 
 		/// <summary>
@@ -100,6 +105,10 @@ namespace Merge
 			return;
 			#elif (UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX || UNITY_IPHONE)
 			mergeVRSetMaxControllerCount(count);
+			#elif (UNITY_EDITOR_WIN)
+			//WTP2.0
+			//Current windows only support 1 controller, later version will support more;
+			return;
 			#else
 			return;
 			#endif
@@ -122,6 +131,9 @@ namespace Merge
 			return ControllerCount;
 			#elif (UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX || UNITY_IPHONE)
 			return mergeVRGetControllerCount();
+			#elif (UNITY_EDITOR_WIN)
+			//WTP2.0
+			return  WinControllerCount();
 			#else
 				return 0;
 			#endif
@@ -156,6 +168,9 @@ namespace Merge
 			#elif (!UNITY_EDITOR && (UNITY_IPHONE)) || (UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX)
 			ControllerData controllerData = mergeVRGetControllerData(controllerNum);
 			return controllerData;
+			#elif (UNITY_EDITOR_WIN)
+			//WTP2.0
+			return GetControllerData();
 			#else
 				ControllerData controllerDataPC = new ControllerData();
 				return controllerDataPC;
@@ -183,9 +198,10 @@ namespace Merge
 				}
 
 			#elif (!UNITY_EDITOR && (UNITY_IPHONE)) || (UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX)
-				
 			mergeVRInit();
-				
+			#elif (UNITY_EDITOR_WIN)
+			//WTP2.0
+			InitWin();
 			#endif	
 		}
 
@@ -197,14 +213,110 @@ namespace Merge
 		{
 			#if (UNITY_ANDROID && !UNITY_EDITOR) 
 			return androidClass.CallStatic<int> ("mergeVRExit");
-			#else
-			#if (!UNITY_EDITOR && (UNITY_IPHONE)) || (UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX)
+			#elif (!UNITY_EDITOR && (UNITY_IPHONE)) || (UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX)
 			return mergeVRExit();
+			#elif (UNITY_EDITOR_WIN)
+			//WTP2.0
+			//Will perform exit later
+			return 0;
 			#else
 				return 0;
 			#endif
-
-			#endif
 		}
+
+
+		#if UNITY_EDITOR_WIN
+		//Temp Windows Data Process
+		static ControllerData lastData = new ControllerData ();
+		static MergeDataProcess dataProcess = new MergeDataProcess ();
+		const int BuffSize = 20000;
+		static IntPtr PBuffer;
+		static bool isWinConnect = false;
+		static void InitWin () {
+			PBuffer = Marshal.AllocHGlobal(BuffSize);
+			isWinConnect = GetControllerState ();
+		}
+		static int WinControllerCount(){
+			if (!isWinConnect) {
+				isWinConnect = GetControllerState ();
+				return isWinConnect?1:0;
+			} else {
+				return 1;
+			}
+		}
+		static public bool GetControllerState(){
+			int tptp = GetDeviceState ();
+			Debug.LogWarning ("Get Controller State Start = "+tptp);
+
+			if (tptp == 0){
+				return true;
+			} else{
+				return false;
+			}
+		}
+		static public ControllerData GetControllerData()
+		{
+			int iRet;
+			do {
+				iRet = GetStructData (PBuffer, BuffSize);
+			} while (iRet == 1000);
+			if (iRet > 0) {
+				IntPtr PLast = (IntPtr)((uint)PBuffer + (iRet - 1) * 20);
+				lastData = ProcessData (PLast); 
+			} else if (iRet == 0) {
+				//no data
+			} else {
+				Debug.LogError ("Get Controller Data Error!! Should Not Happen!");
+			}
+			return lastData;
+		}
+		static ControllerData ProcessData(IntPtr PLast){
+			ControllerData rcData = new ControllerData ();
+			rcData.FusedSensorOrientation.w = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 1),
+				Marshal.ReadByte (PLast, 0)
+			}, MergeDataProcess.DataTypeEnum.qua);
+			rcData.FusedSensorOrientation.x = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 3),
+				Marshal.ReadByte (PLast, 2)
+			}, MergeDataProcess.DataTypeEnum.qua);
+			rcData.FusedSensorOrientation.y = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 5),
+				Marshal.ReadByte (PLast, 4)
+			}, MergeDataProcess.DataTypeEnum.qua);
+			rcData.FusedSensorOrientation.z = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 7),
+				Marshal.ReadByte (PLast, 6)
+			}, MergeDataProcess.DataTypeEnum.qua);
+
+			rcData.LinearAcceleration.x = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 9),
+				Marshal.ReadByte (PLast, 8)
+			}, MergeDataProcess.DataTypeEnum.lia);
+			rcData.LinearAcceleration.y = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 11),
+				Marshal.ReadByte (PLast, 10)
+			}, MergeDataProcess.DataTypeEnum.lia);
+			rcData.LinearAcceleration.z = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 13),
+				Marshal.ReadByte (PLast, 12)
+			}, MergeDataProcess.DataTypeEnum.lia);
+
+			rcData.Buttons = dataProcess.ProcessBtn (new byte[] {
+				Marshal.ReadByte (PLast, 15),
+				Marshal.ReadByte (PLast, 14)
+			});
+			rcData.xJoyStick = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 19),
+				Marshal.ReadByte (PLast, 18)
+			}, MergeDataProcess.DataTypeEnum.joy);
+			rcData.yJoyStick = dataProcess.ProcessData (new byte[] {
+				Marshal.ReadByte (PLast, 17),
+				Marshal.ReadByte (PLast, 16)
+			}, MergeDataProcess.DataTypeEnum.joy);
+			rcData.Connected = true;
+			return rcData;
+		}
+		#endif
 	}
 }

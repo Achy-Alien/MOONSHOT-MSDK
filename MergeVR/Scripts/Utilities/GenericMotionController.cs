@@ -15,14 +15,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State != GvrConnectionState.Disconnected)
-			{
-				return (MotionControllerConnectionState)(int)GvrController.State;
-			}
-			else
-			{
-				return (MotionControllerConnectionState)(int)MSDK.State;
-			}
+			return (MotionControllerConnectionState)(int)MSDK.State;
 		}
 	}
 
@@ -30,42 +23,21 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.Orientation;
-			}
-			else
-			{
-				return MSDK.Orientation;
-			}
+			return MSDK.Orientation;
 		}
 	}
 	public static Vector3 Gyro
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.Gyro;
-			}
-			else
-			{
-				return MSDK.Gyro;
-			}
+			return MSDK.Gyro;
 		}
 	}
 	public static Vector3 Accel
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.Accel;
-			}
-			else
-			{
-				return MSDK.Accel;
-			}
+			return MSDK.Accel;
 		}
 	}
 	// TODO: Implement IsTouching
@@ -73,14 +45,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.IsTouching;
-			}
-			else
-			{
-				return MSDK.IsTouching;
-			}
+			return MSDK.IsTouching;
 		}
 	}
 	// TODO: Implement TouchDown
@@ -88,14 +53,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.TouchDown;
-			}
-			else
-			{
-				return MSDK.TouchDown;
-			}
+			return MSDK.TouchDown;
 		}
 	}
 	// TODO: Implement TouchUp
@@ -103,14 +61,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.TouchUp;
-			}
-			else
-			{
-				return MSDK.TouchUp;
-			}
+			return MSDK.TouchUp;
 		}
 	}
 	// TODO: Implment TouchPos
@@ -118,14 +69,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.TouchPos;
-			}
-			else
-			{
-				return MSDK.TouchPos;
-			}
+			return MSDK.TouchPos;
 		}
 	}
 	// TODO: Implement Recentering
@@ -133,14 +77,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.Recentering;
-			}
-			else
-			{
-				return MSDK.Recentering;
-			}
+			return MSDK.Recentering;
 		}
 	}
 	// TODO: Implement Recentered
@@ -148,14 +85,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.Recentered;
-			}
-			else
-			{
-				return MSDK.Recentered;
-			}
+			return MSDK.Recentered;
 		}
 	}
 	// TODO: Implement ClickButton
@@ -163,14 +93,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.ClickButton;
-			}
-			else
-			{
-				return MSDK.ClickButton;
-			}
+			return MSDK.ClickButton;
 		}
 	}
 	// TODO: Implement ClickButtonDown
@@ -178,14 +101,7 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.ClickButtonDown;
-			}
-			else
-			{
-				return MSDK.ClickButtonDown;
-			}
+			return MSDK.ClickButtonDown;
 		}
 	}
 	// TODO: ClickButtonUp
@@ -193,56 +109,28 @@ public class GenericMotionController : MonoBehaviour
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.ClickButtonUp;
-			}
-			else
-			{
-				return MSDK.ClickButtonUp;
-			}
+			return MSDK.ClickButtonUp;
 		}
 	}
 	public static bool AppButton
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.AppButton;
-			}
-			else
-			{
-				return MSDK.AppButton;
-			}
+			return MSDK.AppButton;
 		}
 	}
 	public static bool AppButtonDown
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.AppButtonDown;
-			}
-			else
-			{
-				return MSDK.AppButtonDown;
-			}
+			return MSDK.AppButtonDown;
 		}
 	}
 	public static bool AppButtonUp
 	{
 		get
 		{
-			if (GvrController.State == GvrConnectionState.Connected)
-			{
-				return GvrController.AppButtonUp;
-			}
-			else
-			{
-				return MSDK.AppButtonUp;
-			}
+			return MSDK.AppButtonUp;
 		}
 	}
 
